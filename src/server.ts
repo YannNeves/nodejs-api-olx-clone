@@ -4,6 +4,7 @@ import cors from 'cors';
 import fileupload from 'express-fileupload';
 import path from 'path';
 import { mongoConnect } from './database/mongo';
+import apiRoutes from './routes/api';
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ server.use(fileupload());
 
 server.use(express.static(path.join(__dirname, '../public')));
 
-server.get('/ping', (req: Request, res: Response) => res.json({ pong: true }));
+server.use(apiRoutes);
 
 server.listen(process.env.PORT, () => {
   console.log(`- Rodando no endereço: ${process.env.BASE}`);
