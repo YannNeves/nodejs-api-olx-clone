@@ -1,9 +1,10 @@
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+import * as UserController from '../controllers/userController';
+import * as AuthController from '../controllers/authController';
+import * as AdsController from '../controllers/adsController';
 
-const AuthController = require('./controllers/AuthController');
-const UserController = require('./controllers/UserController');
-const AdsController = require('./controllers/AdsController');
+
+const router = Router();
 
 router.get('/ping', (req, res) => {
   res.json({ pong: true });
@@ -22,7 +23,4 @@ router.put('/ad/list', AdsController.getList);
 router.get('/ad/item', AdsController.getItem);
 router.post('/ad/:id', AdsController.editAction);
 
-
-
-
-module.exports = router;
+export default router;
