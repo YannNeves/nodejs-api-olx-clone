@@ -8,8 +8,8 @@ import * as AdsController from '../controllers/adsController';
 
 const router = Router();
 
-router.post('/user/sigin', AuthController.signin);
 router.post('/user/signup', validator.signup , AuthController.signup);
+router.post('/user/signin', validator.signin, AuthController.signin);
 
 router.get('/states', UserController.getStates);
 router.get('/user/me', privateRoute, UserController.info);

@@ -12,8 +12,7 @@ const modelSchema = new Schema<UserTypes>({
   name: String,
   email: String,
   state: String,
-  passwordHash: String,
-  token: String
+  passwordHash: String
 })
 
 const modelName: string  = 'User';

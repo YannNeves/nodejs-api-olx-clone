@@ -1,9 +1,10 @@
+import { Types } from 'mongoose';
 import { Request, Response } from 'express';
 import { validationResult, matchedData } from 'express-validator';
-
-export const signin = async (req: Request, res: Response) => {
-  res.status(200).json(true);
-}
+import User from '../models/User';
+import State from '../models/State';
+import bcrypt from 'bcrypt';
+import { generateToken } from '../middlewares/Auth';
 
 export const signup = async (req: Request, res: Response) => {
 
@@ -14,5 +15,67 @@ export const signup = async (req: Request, res: Response) => {
   }
   const data = matchedData(req);
 
-  res.status(200).json({message: 'Sucesso ao cadastrar', data});
-}
+  const user = await User.findOne({
+    email: data.email
+  });
+  
+  if (user) {
+    res.json({
+      error: { email: { msg: 'E-mail já existe!' }}
+    });
+    return; 
+  }
+
+  if (Types.ObjectId.isValid(data.state)) {
+    const state = await State.findById(data.state);
+    if (!state) {
+      res.json({
+        error: { email: { msg: 'Estado não existe!' }}
+      });
+      return;
+    }
+  } else {
+    res.json({
+      error: { email: { msg: 'Código de estado inválido!' }}
+    });
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(data.password, 10);
+
+  const newUser = await User.create({
+    name: data.name,
+    email: data.email,
+    passwordHash: passwordHash,
+    state: data.state
+  });
+
+  const token = generateToken({ id: newUser.id });
+
+  res.status(200).json({message: 'Sucesso ao cadastrar', data, token});
+};
+
+export const signin = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.json({ error: errors.mapped() });
+    return;
+  }
+
+  const data = matchedData(req);
+
+  const user = await User.findOne({ email: data.email})
+  if (!user) {
+    res.json({ error: 'E-mail e/ou senha errados!' });
+    return;
+  }
+
+  const match = await bcrypt.compare(data.password, user.passwordHash);
+  if (!match) {
+    res.json({ error: 'E-mail e/ou senha errados!' });
+    return;
+  }
+
+  const token = generateToken({ id: user.id });
+  res.status(200).json({ token, email: data.email });
+};
